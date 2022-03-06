@@ -8,8 +8,7 @@ extern int unblockevent;
 QUEUE ready;
 QUEUE waitinginevent[MAXTHREAD];
 
-void scheduler(int arguments)
-{
+void scheduler(int arguments){
 	int old,next;
 	int changethread=0;
 	int waitingthread=0;
@@ -17,37 +16,36 @@ void scheduler(int arguments)
 	int event=arguments & 0xFF00;
 	int callingthread=arguments & 0xFF;
 
-	if(event==NEWTHREAD)
-	{
+	if(event==NEWTHREAD){
 		// Un nuevo hilo va a la cola de listos
 		threads[callingthread].status=READY;
 		_enqueue(&ready,callingthread);
 	}
-	
-	if(event==BLOCKTHREAD)
-	{
 
+	if(event == TIMER){
+		_enqueue(&ready, callingthread);
+		changethread = 1;
+	}
+	
+	if(event==BLOCKTHREAD){
 		threads[callingthread].status=BLOCKED;
 		_enqueue(&waitinginevent[blockevent],callingthread);
 
 		changethread=1;
 	}
 
-	if(event==ENDTHREAD)
-	{
+	if(event==ENDTHREAD){
 		threads[callingthread].status=END;
 		changethread=1;
 	}
 	
-	if(event==UNBLOCKTHREAD)
-	{
-			threads[callingthread].status=READY;
-			_enqueue(&ready,callingthread);
+	if(event==UNBLOCKTHREAD){
+		threads[callingthread].status=READY;
+		_enqueue(&ready,callingthread);
 	}
 
 	
-	if(changethread)
-	{
+	if(changethread){
 		old=currthread;
 		next=_dequeue(&ready);
 		
